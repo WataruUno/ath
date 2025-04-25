@@ -69,8 +69,8 @@ with st.container(border=True):
     except:
         st.write(f'{recent_low_time:%Y-%m-%d} : {unit}{recent_low_price:,.2f}')
 
-st.write(f"- All-time-high is {(ath_price - now_price) /now_price:.2%} above the current price.")
-st.write(f"- Current price is at {(now_price -recent_low_price) / (ath_price - recent_low_price):.2%} between recent low and all-time-high.")
+st.write(f"- All-time-high is `{(ath_price - now_price) /now_price:.2%}` above the current price.")
+st.write(f"- Current price is at `{(now_price -recent_low_price) / (ath_price - recent_low_price):.2%}` between recent low and all-time-high.")
 
 st.write('# Price Movement since ATH(close)')
 cols = st.columns((1, 1))
