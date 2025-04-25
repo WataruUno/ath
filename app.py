@@ -1,12 +1,7 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import yfinance as yf
-import pandas as pd
 import plotly.graph_objects as go
-import datetime
-import numpy as np
-from tqdm.notebook import tqdm
 
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
