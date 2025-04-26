@@ -40,7 +40,7 @@ with st.container(border=True):
     st.write('## Current Price')
     nowtime, now_price = price.index[-1], price['price'].iloc[-1]
     nowtime = nowtime + pd.Timedelta(hours=16)
-    if intraday:
+    if intraday and yf.Ticker(ticker).info['marketState'] == 'REGULAR':
         now_day = yf.download(
             ticker, start=f'{nowtime:%Y-%m-%d}', end=f'{nowtime+pd.Timedelta(days=1):%Y-%m-%d}',
             interval='1m', auto_adjust=False).xs(ticker, axis=1, level=1)
