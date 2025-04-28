@@ -8,5 +8,5 @@ pip install requirements.txt
 
 ## 実行方法
 ```
-steamlit run app.py
+streamlit run app.py
 ```
