@@ -31,7 +31,7 @@ ticker = tickers[index]
 data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
 
 unit = '$'
-st.write(data)
+#st.write(data)
 
 price = data['Adj Close'].to_frame('price').dropna()
 price['max'] = price['price'].expanding().max()
@@ -46,7 +46,7 @@ with st.container(border=True):
     st.write('## Current Price')
     nowtime, now_price = price.index[-1], price['price'].iloc[-1]
     nowtime = nowtime + pd.Timedelta(hours=16)
-    if intraday and yf.Ticker(ticker).info['marketState'] == 'REGULAR':
+    if intraday and yf.Ticker(ticker, session=session).info['marketState'] == 'REGULAR':
         now_day = yf.download(ticker, interval='1m', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
         now_day = now_day.tz_convert('America/New_York')
         nowtime, now_price = now_day.index[-1], now_day.iloc[-1]['Close']
