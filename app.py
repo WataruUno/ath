@@ -31,6 +31,7 @@ ticker = tickers[index]
 data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
 
 unit = '$'
+st.write(data)
 
 price = data['Adj Close'].to_frame('price').dropna()
 price['max'] = price['price'].expanding().max()
