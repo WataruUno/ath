@@ -13,6 +13,7 @@ st.title('All-Time-High Watch')
 yfdata = yf.data.YfData()
 st.write(f"yfdata._cookie = {yfdata._cookie}")
 st.write(f"_load_cookie_basic = {yfdata._load_cookie_basic()}")
+st.write(f"cache = {yf.cache._CookieCacheManager.get_cookie_cache().lookup('basic')}")
 
 tickers = {
     'S&P 500':'^GSPC',
