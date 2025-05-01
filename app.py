@@ -32,7 +32,7 @@ with col_category:
     intraday = (category == 'Intraday')
 ticker = tickers[index]
 
-data = yf.download(ticker, start='2000-01-01', auto_adjust=False).xs(ticker, axis=1, level=1)
+data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
 
 unit = '$'
 
