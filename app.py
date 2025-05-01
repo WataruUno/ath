@@ -11,7 +11,8 @@ _ = yf.Ticker('...', session=session)
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
 yfdata = yf.data.YfData()
-st.write(yfdata._cookie)
+st.write(f"yfdata._cookie = {yfdata._cookie}")
+st.write(f"_load_cookie_basic = {yfdata._load_cookie_basic()}")
 
 tickers = {
     'S&P 500':'^GSPC',
