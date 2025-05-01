@@ -2,18 +2,17 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
-#from curl_cffi import requests
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
-#session = requests.Session(impersonate='chrome')
-#_ = yf.Ticker('...', session=session)
+from curl_cffi import requests as curl_requests
+import yfinance_cookie_patch
+
+yfinance_cookie_patch.patch_yfdata_cookie_basic()
 
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
 yfdata = yf.data.YfData()
-st.write(f"yfdata._cookie = {yfdata._cookie}")
-st.write(f"_load_cookie_basic = {yfdata._load_cookie_basic()}")
-st.write(f"cache = {yf.cache._CookieCacheManager.get_cookie_cache().lookup('basic')}")
+#st.write(f"yfdata._cookie = {yfdata._cookie}")
+#st.write(f"_load_cookie_basic = {yfdata._load_cookie_basic()}")
+#st.write(f"cache = {yf.cache._CookieCacheManager.get_cookie_cache().lookup('basic')}")
 
 tickers = {
     'S&P 500':'^GSPC',
