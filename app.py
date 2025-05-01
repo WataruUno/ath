@@ -3,13 +3,15 @@ import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
 from curl_cffi import requests
-import logging
-logging.basicConfig(level=logging.DEBUG)
+#import logging
+#logging.basicConfig(level=logging.DEBUG)
 session = requests.Session(impersonate='chrome')
 _ = yf.Ticker('...', session=session)
 
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
+cookie = yf.data.YfData()._get_cookie_basic()
+st.write({'name': cookie.name, 'value': cookie.value})
 
 tickers = {
     'S&P 500':'^GSPC',
