@@ -46,3 +46,4 @@ urllib3==2.4.0
 watchdog==6.0.0
 wheel==0.45.1
 yfinance==0.2.56
+curl_cffi==0.10.0
