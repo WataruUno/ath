@@ -3,6 +3,8 @@ import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
 from curl_cffi import requests
+import logging
+logging.basicConfig(level=logging.DEBUG)
 session = requests.Session(impersonate='chrome')
 _ = yf.Ticker('...', session=session)
 
