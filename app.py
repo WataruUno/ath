@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
-from curl_cffi import requests
+#from curl_cffi import requests
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
-session = requests.Session(impersonate='chrome')
-_ = yf.Ticker('...', session=session)
+#session = requests.Session(impersonate='chrome')
+#_ = yf.Ticker('...', session=session)
 
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
@@ -32,7 +32,7 @@ with col_category:
     intraday = (category == 'Intraday')
 ticker = tickers[index]
 
-data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
+data = yf.download(ticker, start='2000-01-01', auto_adjust=False).xs(ticker, axis=1, level=1)
 
 unit = '$'
 
