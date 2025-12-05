@@ -81,7 +81,7 @@ with st.container(border=True):
     if intraday:
         name = 'High'
     ath = data[name].sort_values().iloc[[-1]]
-    if not intraday:
+    if not intraday and info['marketState'] == 'REGULAR':
         ath = data[name].iloc[:-1].sort_values().iloc[[-1]]
     ath_time, ath_price = ath.index[-1], ath.iloc[-1]
     ath_time = ath_time + pd.Timedelta(hours=closing_hour, minutes=closing_minute)
@@ -105,7 +105,7 @@ with st.container(border=True):
     start = price[price['term'] == price['term'].max()].index[0]
     end = price[price['term'] == price['term'].max()].index[-1]
     recent_low = data.loc[start:end, name].sort_values().iloc[[0]]
-    if not intraday:
+    if not intraday and info['marketState'] == 'REGULAR':
         recent_low = data.iloc[:-1].loc[start:end, name].sort_values().iloc[[0]]
     recent_low_time, recent_low_price = recent_low.index[0], recent_low.iloc[0]
     recent_low_time = recent_low_time + pd.Timedelta(hours=closing_hour, minutes=closing_minute)
