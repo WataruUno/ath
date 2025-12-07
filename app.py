@@ -7,6 +7,13 @@ import yfinance_cookie_patch
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
+def is_int(x):
+    try:
+        int(x)
+        return True
+    except:
+        return False
+
 session = curl_requests.Session(impersonate="chrome")
 yfinance_cookie_patch.patch_yfdata_cookie_basic()
 
@@ -41,6 +48,10 @@ with col_ticker:
         categories = ['Intraday']
     elif type == 'Individual Stock':
         ticker = st.text_input("Ticker", None, max_chars=4, placeholder='AAPL')
+        if ticker:
+            ticker = ticker.upper()
+            if is_int(ticker):
+                ticker = f"{ticker}.T"
 with col_category:
     category = st.selectbox("Category", categories)
     intraday = (category == 'Intraday')
@@ -54,10 +65,8 @@ if info.get('currency') is None:
     st.stop()
 
 unit = '$'
-closing_hour, closing_minute = 16, 0
 if info['currency'] == 'JPY':
     unit = '¥'
-    closing_hour, closing_minute = 15, 45
 
 data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
 price = data['Adj Close'].to_frame('price').dropna()
@@ -68,15 +77,16 @@ start = price[price['ath']].index[0]
 price = price.loc[start:].copy()
 price['term'] = price['ath'].cumsum()
 
-st.write('# Status')
+st.write(f"# {info['longName']}")
+st.write('## Status')
 with st.container(border=True):
-    st.write('## Current Price')
+    st.write('### Current Price')
     nowtime = datetime.fromtimestamp(info['regularMarketTime'])
     nowtime = nowtime.astimezone(timezone.utc).astimezone(ZoneInfo(key=info['exchangeTimezoneName']))
     now_price = info['regularMarketPrice']
-    st.write(f'{nowtime:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : {unit}{now_price:,.2f}')
+    st.write(f'{nowtime:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : **{unit}{now_price:,.2f}**')
 
-    st.write('## All-Time-High')
+    st.write('### All-Time-High')
     name = 'Close'
     if intraday:
         name = 'High'
@@ -84,8 +94,7 @@ with st.container(border=True):
     if not intraday and info['marketState'] == 'REGULAR':
         ath = data[name].iloc[:-1].sort_values().iloc[[-1]]
     ath_time, ath_price = ath.index[-1], ath.iloc[-1]
-    ath_time = ath_time + pd.Timedelta(hours=closing_hour, minutes=closing_minute)
-    message = f'{ath_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : {unit}{ath_price:,.2f}'
+    message = f'{ath_time:%Y-%m-%d}({info['exchangeTimezoneShortName']}) : **{unit}{ath_price:,.2f}**'
     if intraday:
         try:
             ath_day = yf.download(
@@ -93,12 +102,12 @@ with st.container(border=True):
                 interval='1m', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
             ath_day = ath_day.tz_convert(info['exchangeTimezoneName'])
             ath_time = ath_day['High'].sort_values().index[-1]
-            message = f'{ath_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : {unit}{ath_price:,.2f}'
+            message = f'{ath_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : **{unit}{ath_price:,.2f}**'
         except:
-            message = f'{ath_time:%Y-%m-%d} : ({info['exchangeTimezoneShortName']}) : {unit}{ath_price:,.2f}'
+            message = f'{ath_time:%Y-%m-%d}({info['exchangeTimezoneShortName']}) : **{unit}{ath_price:,.2f}**'
     st.write(message)
 
-    st.write('## Recent Low')
+    st.write('### Recent Low')
     name = 'Close'
     if intraday:
         name = 'Low'
@@ -108,8 +117,7 @@ with st.container(border=True):
     if not intraday and info['marketState'] == 'REGULAR':
         recent_low = data.iloc[:-1].loc[start:end, name].sort_values().iloc[[0]]
     recent_low_time, recent_low_price = recent_low.index[0], recent_low.iloc[0]
-    recent_low_time = recent_low_time + pd.Timedelta(hours=closing_hour, minutes=closing_minute)
-    message = f'{recent_low_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : {unit}{recent_low_price:,.2f}'
+    message = f'{recent_low_time:%Y-%m-%d}({info['exchangeTimezoneShortName']}) : **{unit}{recent_low_price:,.2f}**'
     if intraday:
         try:
             recent_low_day = yf.download(
@@ -117,9 +125,9 @@ with st.container(border=True):
                 interval='1m', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
             recent_low_day = recent_low_day.tz_convert(info['exchangeTimezoneName'])
             recent_low_time = recent_low_day['Low'].sort_values().index[0]
-            message = f'{recent_low_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : {unit}{recent_low_price:,.2f}'
+            message = f'{recent_low_time:%Y-%m-%d %H:%M}({info['exchangeTimezoneShortName']}) : **{unit}{recent_low_price:,.2f}**'
         except:
-            message = f'{recent_low_time:%Y-%m-%d}({info['exchangeTimezoneShortName']}) : {unit}{recent_low_price:,.2f}'
+            message = f'{recent_low_time:%Y-%m-%d}({info['exchangeTimezoneShortName']}) : **{unit}{recent_low_price:,.2f}**'
     st.write(message)
 
 up_to_ath = (ath_price - now_price) / now_price
@@ -131,7 +139,7 @@ st.write(message)
 if ath_price != recent_low_price and current_ratio < 1:
     st.write(f"- The current price is at `{current_ratio:.2%}` between recent low and all-time-high.")
 
-st.write('# Price Movement since ATH(Closing)')
+st.write('## Price Movement since ATH(Closing)')
 cols = st.columns((1, 1))
 with cols[0]:
     from_year = st.selectbox(
