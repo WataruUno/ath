@@ -14,8 +14,8 @@ def is_int(x):
     except:
         return False
 
-session = curl_requests.Session(impersonate="chrome")
-yfinance_cookie_patch.patch_yfdata_cookie_basic()
+session = None # curl_requests.Session(impersonate="chrome")
+#yfinance_cookie_patch.patch_yfdata_cookie_basic()
 
 st.set_page_config(page_title="ATH Watch", page_icon=":chart_with_upwards_trend:")
 st.title('All-Time-High Watch')
