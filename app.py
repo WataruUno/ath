@@ -52,16 +52,21 @@ others = {
     'Ethereum(USD)': 'ETH-USD',
 }
 
-datas = pd.read_csv(
-    'https://emaxis.am.mufg.jp/fund_file/setteirai/emaxis.csv',encoding='cp932',
-    header=[0, 1]
-).rename(columns=lambda x: None if x.startswith('Unnamed') else x)
-datas.columns.names = ['name', 'item']
-datas = datas.T.reset_index()
-datas['name'] = datas['name'].ffill()
-datas = datas.set_index(['name', 'item']).T
-datas['Date'] = pd.to_datetime(datas['ｅＭＡＸＩＳ ＴＯＰＩＸインデックス']['基準日'])
-datas = datas.set_index('Date').xs('基準価額', axis=1, level=1)
+@st.cache_data(ttl=2*60*60)
+def acquire_fund_data():
+    datas = pd.read_csv(
+        'https://emaxis.am.mufg.jp/fund_file/setteirai/emaxis.csv',encoding='cp932',
+        header=[0, 1]
+    ).rename(columns=lambda x: None if x.startswith('Unnamed') else x)
+    datas.columns.names = ['name', 'item']
+    datas = datas.T.reset_index()
+    datas['name'] = datas['name'].ffill()
+    datas = datas.set_index(['name', 'item']).T
+    datas['Date'] = pd.to_datetime(datas['ｅＭＡＸＩＳ ＴＯＰＩＸインデックス']['基準日'])
+    datas = datas.set_index('Date').xs('基準価額', axis=1, level=1)
+    return datas
+
+datas = acquire_fund_data()
 
 col_type, col_ticker, col_category = st.columns((1, 1, 1))
 with col_type:
