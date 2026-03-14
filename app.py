@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import requests
 from io import StringIO
+import unicodedata
 
 def is_int(x):
     try:
@@ -132,7 +133,7 @@ start = price[price['ath']].index[0]
 price = price.loc[start:].copy()
 price['term'] = price['ath'].cumsum()
 
-st.write(f"# {info['longName']}")
+st.write(f"# {unicodedata.normalize('NFKC', info['longName'])}")
 st.write('## Status')
 with st.container(border=True):
     st.write('### Current Price')
