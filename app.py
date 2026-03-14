@@ -6,6 +6,8 @@ from curl_cffi import requests as curl_requests
 import yfinance_cookie_patch
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+import requests
+from io import StringIO
 
 def is_int(x):
     try:
@@ -54,10 +56,9 @@ others = {
 
 @st.cache_data(ttl=2*60*60)
 def acquire_fund_data():
-    datas = pd.read_csv(
-        'https://emaxis.am.mufg.jp/fund_file/setteirai/emaxis.csv',encoding='cp932',
-        header=[0, 1]
-    ).rename(columns=lambda x: None if x.startswith('Unnamed') else x)
+    req = requests.get('https://emaxis.am.mufg.jp/fund_file/setteirai/emaxis.csv')
+    req.encoding = 'cp932'
+    datas = pd.read_csv(StringIO(req.text), header=[0, 1]).rename(columns=lambda x: None if x.startswith('Unnamed') else x)
     datas.columns.names = ['name', 'item']
     datas = datas.T.reset_index()
     datas['name'] = datas['name'].ffill()
