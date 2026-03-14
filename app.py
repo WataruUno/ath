@@ -30,18 +30,51 @@ indexes = {
     'NYSE FANG+TM': '^NYFANG',
     'Nikkei 225' : '^N225',
 }
+funds = {
+    'S&P500': 'ｅＭＡＸＩＳ Ｓｌｉｍ 米国株式（Ｓ＆Ｐ５００）',
+    'オルカン': 'ｅＭＡＸＩＳ Ｓｌｉｍ 全世界株式（オール・カントリー）',
+    '先進国(除く日本)': 'ｅＭＡＸＩＳ Ｓｌｉｍ 先進国株式インデックス（除く日本）',
+    '全世界(除く日本)': 'ｅＭＡＸＩＳ Ｓｌｉｍ 全世界株式（除く日本）',
+    'TOPIX':'ｅＭＡＸＩＳ Ｓｌｉｍ 国内株式（ＴＯＰＩＸ）',
+    'バランス(８資産均等)': 'ｅＭＡＸＩＳ Ｓｌｉｍ バランス（８資産均等型）',
+    '新興国': 'ｅＭＡＸＩＳ Ｓｌｉｍ 新興国株式インデックス',
+    '日経平均': 'ｅＭＡＸＩＳ Ｓｌｉｍ 国内株式（日経平均）',
+    '先進国債券(除く日本)': 'ｅＭＡＸＩＳ Ｓｌｉｍ 先進国債券インデックス（除く日本）',
+    'NAXDAQ100': 'ｅＭＡＸＩＳ ＮＡＳＤＡＱ１００インデックス',
+    'NYダウ': 'ｅＭＡＸＩＳ ＮＹダウインデックス',
+    '先進国リート(除く日本)': 'ｅＭＡＸＩＳ Ｓｌｉｍ 先進国リートインデックス（除く日本）',
+    '全世界株式(3地域均等)': 'ｅＭＡＸＩＳ Ｓｌｉｍ 全世界株式（３地域均等型）',
+    '国内リート': 'ｅＭＡＸＩＳ Ｓｌｉｍ 国内リートインデックス',
+    '国内債券': 'ｅＭＡＸＩＳ Ｓｌｉｍ 国内債券インデックス'
+}
 others = {
     'Bitcoin(USD)': 'BTC-USD',
     'Ethereum(USD)': 'ETH-USD',
 }
+
+datas = pd.read_csv(
+    'https://emaxis.am.mufg.jp/fund_file/setteirai/emaxis.csv',encoding='cp932',
+    header=[0, 1]
+).rename(columns=lambda x: None if x.startswith('Unnamed') else x)
+datas.columns.names = ['name', 'item']
+datas = datas.T.reset_index()
+datas['name'] = datas['name'].ffill()
+datas = datas.set_index(['name', 'item']).T
+datas['Date'] = pd.to_datetime(datas['ｅＭＡＸＩＳ ＴＯＰＩＸインデックス']['基準日'])
+datas = datas.set_index('Date').xs('基準価額', axis=1, level=1)
+
 col_type, col_ticker, col_category = st.columns((1, 1, 1))
 with col_type:
-    type = st.selectbox("Type", ['Index', 'Other', 'Individual Stock'])
+    type = st.selectbox("Type", ['Index', 'Fund', 'Other', 'Individual Stock'])
 with col_ticker:
     categories = ['Intraday', 'Closing']
     if type == 'Index':
         index = st.selectbox("Index", indexes.keys())
         ticker = indexes[index]
+    elif type == 'Fund':
+        fund = st.selectbox("Fund", funds.keys())
+        ticker = funds[fund]
+        categories = ['Closing']
     elif type == 'Other':
         asset = st.selectbox("Asset", others.keys())
         ticker = others[asset]
@@ -59,7 +92,18 @@ with col_category:
 if ticker is None:
     st.stop()
 
-info = yf.Ticker(ticker, session=session).info
+if type == 'Fund':
+    info = {
+        'longName': ticker,
+        'currency': 'JPY',
+        'exchangeTimezoneName':'Asia/Tokyo',
+        'exchangeTimezoneShortName': 'JST',
+        'marketState': 'CLOSED'
+        }
+    info['regularMarketTime'] = int(datas[ticker].dropna().index[-1].timestamp())
+    info['regularMarketPrice'] = datas[ticker].dropna().iloc[-1]
+else:
+    info = yf.Ticker(ticker, session=session).info
 if info.get('currency') is None:
     st.error(f"No ticker : [ {ticker} ]")
     st.stop()
@@ -68,7 +112,12 @@ unit = '$'
 if info['currency'] == 'JPY':
     unit = '¥'
 
-data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
+if type == 'Fund':
+    data = datas[ticker].dropna().to_frame('Open')
+    data['Adj Close'] = data['Close'] = data['High'] = data['Low'] = data['Open']
+    data = data[['Adj Close', 'Close', 'High', 'Low', 'Open']].map(float)
+else:
+    data = yf.download(ticker, start='2000-01-01', auto_adjust=False, session=session).xs(ticker, axis=1, level=1)
 price = data['Adj Close'].to_frame('price').dropna()
 price['max'] = price['price'].expanding().max()
 price['ath'] = (price['price'] == price['max'])
